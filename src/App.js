@@ -5,9 +5,10 @@ import axios from "axios";
 import Searchbar from "./components/Searchbar";
 import ImageGalery from "./components/ImageGallery";
 import Button from "./components/Button";
-// import { Puff } from "react-loader-spinner";
 import Loader from "./components/Loader";
+import Modal from "./components/Modal";
 import style from "./App.module.css";
+import ImageGalleryItem from "./components/ImageGalleryItem";
 
 const API_KEY = "24626518-665b9f7b8dc290fe9a65ef06e";
 const per_page = 12;
@@ -19,18 +20,26 @@ class App extends Component {
     loading: false,
     error: null,
     searchName: "",
+    showModal: false,
+    tryImageID: "",
+    largeImage: "",
   };
-
+  
   async componentDidUpdate(prevProps, prevState) {
     if (
       prevState.searchName !== this.state.searchName ||
       prevState.page !== this.state.page
     ) {
-      this.setState({ loading: true,});
+      this.setState({ loading: true });
       try {
-               
-        const response = await axios.get(`https://pixabay.com/api/?key=${API_KEY}&q=${this.state.searchName}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.state.page}&per_page=${per_page}`);
-        if ((response.data.total ===0)||(response.data.hits.length < 1)){return toast("Sorry, there are no images matching your search query. Please try again.");}
+        const response = await axios.get(
+          `https://pixabay.com/api/?key=${API_KEY}&q=${this.state.searchName}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.state.page}&per_page=${per_page}`
+        );
+        if (response.data.total === 0 || response.data.hits.length < 1) {
+          return toast(
+            "Sorry, there are no images matching your search query. Please try again."
+          );
+        }
         if (!this.state.dateResponse[0].id) {
           return this.setState((e) => ({
             dateResponse: response.data.hits.map((item) => ({
@@ -53,12 +62,16 @@ class App extends Component {
           }));
         }
       } catch (error) {
-        this.setState({ error });        
+        this.setState({ error });
       } finally {
         this.setState({ loading: false });
       }
     }
   }
+
+  togleModal = () => {
+    this.setState(({showModal}) => ({ showModal: !showModal }));
+  };
 
   addSearchName = (searchName) => {
     this.setState({ page: 1 });
@@ -73,6 +86,13 @@ class App extends Component {
     this.setState(() => ({ page: newPage }));
   };
 
+  openModal = (e) =>{   
+    this.setState({showModal : true,});
+    const searchLargeImages = this.state.dateResponse.find(option=> option.id===Number(e.currentTarget.alt)).largeImageURL;
+    this.setState({tryImageID : e.currentTarget.alt,});
+    this.setState({largeImage:searchLargeImages,})
+  }
+
   render() {
     return (
       <>
@@ -86,16 +106,18 @@ class App extends Component {
             pauseOnHover
           />
           <Searchbar onSubmit={this.addSearchName} />
-          {this.state.loading && (
-            <Loader />
-          )} 
-          {this.state.error&&( toast.error(`Sorry something went wrong ! ${this.state.error}`))}         
+          {this.state.loading && <Loader />}
+          {this.state.error &&
+            toast.error(`Sorry something went wrong ! ${this.state.error}`)}
           {this.state.dateResponse[0].id && (
-            <ImageGalery dateResponse={this.state.dateResponse} />
+            <ImageGalery dateResponse={this.state.dateResponse} openModal={this.openModal} />
           )}
           {this.state.dateResponse[0].id && (
             <Button onLoadMore={this.onLoadMore} />
           )}
+          {this.state.showModal&&(<Modal onClose={this.togleModal}>
+            <ImageGalleryItem 
+            id={Number(this.state.tryImageID)} webformatURL={this.state.largeImage} openModal={this.openModal} /></Modal>)}
         </div>
       </>
     );
