@@ -24,7 +24,7 @@ class App extends Component {
     tryImageID: "",
     largeImage: "",
   };
-  
+
   async componentDidUpdate(prevProps, prevState) {
     if (
       prevState.searchName !== this.state.searchName ||
@@ -70,7 +70,7 @@ class App extends Component {
   }
 
   togleModal = () => {
-    this.setState(({showModal}) => ({ showModal: !showModal }));
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
   addSearchName = (searchName) => {
@@ -86,14 +86,18 @@ class App extends Component {
     this.setState(() => ({ page: newPage }));
   };
 
-  openModal = (e) =>{   
-    this.setState({showModal : true,});
-    const searchLargeImages = this.state.dateResponse.find(option=> option.id===Number(e.currentTarget.alt)).largeImageURL;
-    this.setState({tryImageID : e.currentTarget.alt,});
-    this.setState({largeImage:searchLargeImages,})
-  }
+  openModal = (e) => {
+    this.setState({ showModal: true });
+    const searchLargeImages = this.state.dateResponse.find(
+      (option) => option.id === Number(e.currentTarget.alt)
+    ).largeImageURL;
+    this.setState({ tryImageID: e.currentTarget.alt });
+    this.setState({ largeImage: searchLargeImages });
+  };
 
   render() {
+    const { error, loading, showModal, tryImageID, largeImage, dateResponse } =
+      this.state;
     return (
       <>
         <div className={style.App}>
@@ -106,18 +110,24 @@ class App extends Component {
             pauseOnHover
           />
           <Searchbar onSubmit={this.addSearchName} />
-          {this.state.loading && <Loader />}
-          {this.state.error &&
-            toast.error(`Sorry something went wrong ! ${this.state.error}`)}
-          {this.state.dateResponse[0].id && (
-            <ImageGalery dateResponse={this.state.dateResponse} openModal={this.openModal} />
+          {loading && <Loader />}
+          {error && toast.error(`Sorry something went wrong ! ${error}`)}
+          {dateResponse[0].id && (
+            <ImageGalery
+              dateResponse={dateResponse}
+              openModal={this.openModal}
+            />
           )}
-          {this.state.dateResponse[0].id && (
-            <Button onLoadMore={this.onLoadMore} />
+          {dateResponse[0].id && <Button onLoadMore={this.onLoadMore} />}
+          {showModal && (
+            <Modal onClose={this.togleModal}>
+              <ImageGalleryItem
+                id={Number(tryImageID)}
+                webformatURL={largeImage}
+                openModal={this.openModal}
+              />
+            </Modal>
           )}
-          {this.state.showModal&&(<Modal onClose={this.togleModal}>
-            <ImageGalleryItem 
-            id={Number(this.state.tryImageID)} webformatURL={this.state.largeImage} openModal={this.openModal} /></Modal>)}
         </div>
       </>
     );

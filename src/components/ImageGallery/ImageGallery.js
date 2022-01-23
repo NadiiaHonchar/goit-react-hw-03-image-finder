@@ -6,9 +6,13 @@ import ImageGalleryItem from "../ImageGalleryItem";
 const ImageGalery = ({ dateResponse, openModal }) => {
   return (
     <ul className={style.ImageGallery}>
-      {dateResponse.map(( {id, webformatURL} ) => (
-        
-        <ImageGalleryItem key={id} id={id} webformatURL={webformatURL} openModal={openModal} />
+      {dateResponse.map(({ id, webformatURL }) => (
+        <ImageGalleryItem
+          key={id}
+          id={id}
+          webformatURL={webformatURL}
+          openModal={openModal}
+        />
       ))}
     </ul>
   );
@@ -18,7 +22,7 @@ ImageGalery.propTypes = {
   contacts: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
-      webformatURL: PropTypes.string.isRequired,      
+      webformatURL: PropTypes.string.isRequired,
     })
   ),
   openModal: PropTypes.func.isRequired,
